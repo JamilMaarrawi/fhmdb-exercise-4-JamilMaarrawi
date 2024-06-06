@@ -6,14 +6,28 @@ import com.j256.ormlite.dao.Dao;
 import java.util.List;
 
 public class MovieRepository {
+    private static volatile MovieRepository instance;
     Dao<MovieEntity, Long> dao;
 
-    public MovieRepository() throws DataBaseException {
+    private MovieRepository() throws DataBaseException {
         try {
             this.dao = DatabaseManager.getInstance().getMovieDao();
         } catch (Exception e) {
             throw new DataBaseException(e.getMessage());
         }
+    }
+
+    public static MovieRepository getInstance() throws DataBaseException {
+        MovieRepository movieRepository = instance;
+        if(movieRepository == null) {
+            synchronized (MovieRepository.class) {
+                movieRepository = instance;
+                if(movieRepository == null) {
+                    instance = movieRepository = new MovieRepository();
+                }
+            }
+        }
+        return movieRepository;
     }
 
     public long countRows() throws DataBaseException {
